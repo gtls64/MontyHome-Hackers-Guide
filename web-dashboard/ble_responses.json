@@ -1,0 +1,552 @@
+[
+    {
+        "timestamp": "2024-10-25 15:26:25",
+        "data": {
+            "Battery Level": ";RL 76",
+            "NTC Temperature": ";RT 2619",
+            "Humidity": ";RH 5102",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:28:09",
+        "data": {
+            "Battery Level": ";RL 72",
+            "NTC Temperature": ";RT 2581",
+            "Humidity": ";RH 5125",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:29:03",
+        "data": {
+            "Battery Level": ";RL 72",
+            "NTC Temperature": ";RT 2610",
+            "Humidity": ";RH 5115",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:29:43",
+        "data": {
+            "Battery Level": ";RL 72",
+            "NTC Temperature": ";RT 2610",
+            "Humidity": ";RH 5115",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:30:33",
+        "data": {
+            "Battery Level": ";RL 72",
+            "NTC Temperature": ";RT 2592",
+            "Humidity": ";RH 5111",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:31:11",
+        "data": {
+            "Battery Level": ";RL 72",
+            "NTC Temperature": ";RT 2592",
+            "Humidity": ";RH 5111",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:38:25",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2678",
+            "Humidity": ";RH 5997",
+            "TVOC Reading": ";RO 6943",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:39:16",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2676",
+            "Humidity": ";RH 6012",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:40:06",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2676",
+            "Humidity": ";RH 6012",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:41:04",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2641",
+            "Humidity": ";RH 5999",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:41:51",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2641",
+            "Humidity": ";RH 5999",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:42:47",
+        "data": {
+            "Battery Level": ";RL 8",
+            "NTC Temperature": ";RT 2670",
+            "Humidity": ";RH 5990",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:43:35",
+        "data": {
+            "Battery Level": ";RL 8",
+            "NTC Temperature": ";RT 2670",
+            "Humidity": ";RH 5990",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:44:27",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2668",
+            "Humidity": ";RH 5980",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:45:16",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2668",
+            "Humidity": ";RH 5980",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:46:07",
+        "data": {
+            "Battery Level": ";RL 8",
+            "NTC Temperature": ";RT 2664",
+            "Humidity": ";RH 5971",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:46:55",
+        "data": {
+            "Battery Level": ";RL 8",
+            "NTC Temperature": ";RT 2664",
+            "Humidity": ";RH 5971",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:47:47",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2661",
+            "Humidity": ";RH 5965",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 15:48:37",
+        "data": {
+            "Battery Level": ";RL 9",
+            "NTC Temperature": ";RT 2661",
+            "Humidity": ";RH 5965",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:03:32",
+        "data": {
+            "Battery Level": ";RL 75",
+            "NTC Temperature": ";RT 2562",
+            "Humidity": ";RH 4975",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:04:18",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2606",
+            "Humidity": ";RH 4992",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:05:12",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2606",
+            "Humidity": ";RH 4992",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:06:02",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2597",
+            "Humidity": ";RH 4978",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:06:45",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2597",
+            "Humidity": ";RH 4978",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:07:31",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2621",
+            "Humidity": ";RH 4968",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:08:14",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2621",
+            "Humidity": ";RH 4968",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:09:05",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2625",
+            "Humidity": ";RH 4964",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:09:50",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2625",
+            "Humidity": ";RH 4964",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:10:37",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2608",
+            "Humidity": ";RH 4962",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:11:19",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2608",
+            "Humidity": ";RH 4962",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:12:18",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2635",
+            "Humidity": ";RH 4958",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:13:06",
+        "data": {
+            "Battery Level": ";RL 71",
+            "NTC Temperature": ";RT 2635",
+            "Humidity": ";RH 4958",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:13:52",
+        "data": {
+            "Battery Level": ";RL 69",
+            "NTC Temperature": ";RT 2613",
+            "Humidity": ";RH 4960",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:14:35",
+        "data": {
+            "Battery Level": ";RL 69",
+            "NTC Temperature": ";RT 2613",
+            "Humidity": ";RH 4960",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:15:47",
+        "data": {
+            "Battery Level": ";RL 33",
+            "NTC Temperature": ";RT 2642",
+            "Humidity": ";RH 6190",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:16:39",
+        "data": {
+            "Battery Level": ";RL 24",
+            "NTC Temperature": ";RT 2650",
+            "Humidity": ";RH 6199",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:17:44",
+        "data": {
+            "Battery Level": ";RL 32",
+            "NTC Temperature": ";RT 2422",
+            "Humidity": ";RH 5213",
+            "TVOC Reading": ";RO 3",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:18:35",
+        "data": {
+            "Battery Level": ";RL 18",
+            "NTC Temperature": ";RT 2419",
+            "Humidity": ";RH 5218",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-25 16:19:18",
+        "data": {
+            "Battery Level": ";RL 18",
+            "NTC Temperature": ";RT 2419",
+            "Humidity": ";RH 5218",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:45:30",
+        "data": {
+            "Battery Level": ";RL 59",
+            "NTC Temperature": ";RT 2407",
+            "Humidity": ";RH 5944",
+            "TVOC Reading": ";RO 110",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:46:17",
+        "data": {
+            "Battery Level": ";RL 51",
+            "NTC Temperature": ";RT 2433",
+            "Humidity": ";RH 5959",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:47:00",
+        "data": {
+            "Battery Level": ";RL 51",
+            "NTC Temperature": ";RT 2433",
+            "Humidity": ";RH 5959",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:47:47",
+        "data": {
+            "Battery Level": ";RL 51",
+            "NTC Temperature": ";RT 2448",
+            "Humidity": ";RH 5942",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:48:30",
+        "data": {
+            "Battery Level": ";RL 51",
+            "NTC Temperature": ";RT 2448",
+            "Humidity": ";RH 5942",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:49:17",
+        "data": {
+            "Battery Level": ";RL 51",
+            "NTC Temperature": ";RT 2451",
+            "Humidity": ";RH 5938",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:49:59",
+        "data": {
+            "Battery Level": ";RL 51",
+            "NTC Temperature": ";RT 2451",
+            "Humidity": ";RH 5938",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:50:45",
+        "data": {
+            "Battery Level": ";RL 47",
+            "NTC Temperature": ";RT 2473",
+            "Humidity": ";RH 5936",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:51:29",
+        "data": {
+            "Battery Level": ";RL 47",
+            "NTC Temperature": ";RT 2473",
+            "Humidity": ";RH 5936",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:52:17",
+        "data": {
+            "Battery Level": ";RL 50",
+            "NTC Temperature": ";RT 2409",
+            "Humidity": ";RH 5938",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:52:58",
+        "data": {
+            "Battery Level": ";RL 50",
+            "NTC Temperature": ";RT 2409",
+            "Humidity": ";RH 5938",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:53:46",
+        "data": {
+            "Battery Level": ";RL 50",
+            "NTC Temperature": ";RT 2459",
+            "Humidity": ";RH 5940",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:54:30",
+        "data": {
+            "Battery Level": ";RL 50",
+            "NTC Temperature": ";RT 2459",
+            "Humidity": ";RH 5940",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:55:16",
+        "data": {
+            "Battery Level": ";RL 50",
+            "NTC Temperature": ";RT 2419",
+            "Humidity": ";RH 5938",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:55:59",
+        "data": {
+            "Battery Level": ";RL 50",
+            "NTC Temperature": ";RT 2419",
+            "Humidity": ";RH 5938",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    },
+    {
+        "timestamp": "2024-10-29 09:56:49",
+        "data": {
+            "Battery Level": ";RL 50",
+            "NTC Temperature": ";RT 2426",
+            "Humidity": ";RH 5939",
+            "TVOC Reading": ";RO 0",
+            "CO2 Reading": ";RC 0"
+        }
+    }
+]
