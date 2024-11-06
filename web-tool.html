@@ -1,0 +1,285 @@
+<!-- Device id being tested: MONTY4C509226 -->
+
+<html>
+
+<script>
+  var myCharacteristic;
+  var mySecondCharacteristic;
+
+  var deviceName;
+
+  var getAllButtonPressed = false;
+
+  var mutipleRecordArray = [];
+  var accumulateRecords = false;
+
+
+  function connect() {
+    let serviceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+
+    let characteristicUuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+    let secondUuid =  "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+
+    navigator.bluetooth.requestDevice({
+        services: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e'],
+        optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e",  "6e400003-b5a3-f393-e0a9-e50e24dcca9e", "6e400002-b5a3-f393-e0a9-e50e24dcca9e"],
+        acceptAllDevices: true,
+      })
+    .then(device => {
+      log('Connecting...');
+      deviceName = device.name;
+      return device.gatt.connect();
+    })
+    .then(server => {
+      console.log('Getting Service...');
+      return server.getPrimaryService(serviceUuid);
+    })
+    .then(service => {
+      console.log('Getting Characteristic...');
+      return service.getCharacteristics();
+
+    })
+    .then(characteristics => {
+
+      for (const characteristic of characteristics) {
+        console.log(characteristic.uuid)
+      }
+      mySecondCharacteristic = characteristics[0];
+      myCharacteristic = characteristics[1];
+      return myCharacteristic.startNotifications().then(_ => {
+        console.log('> Notifications started');
+        log("Connected to: " + deviceName);
+        myCharacteristic.addEventListener('characteristicvaluechanged',
+            handleNotifications);
+      });
+    })
+  .catch(error => {
+        console.log('Argh! ' + error);
+      });
+    }
+
+  function disconnect() {
+    if (myCharacteristic) {
+      myCharacteristic.stopNotifications()
+      .then(_ => {
+        console.log('> Notifications stopped');
+        log("Disconnected")
+        myCharacteristic.removeEventListener('characteristicvaluechanged',
+            handleNotifications);
+      })
+      .catch(error => {
+        console.log('Argh! ' + error);
+      });
+    }
+  }
+
+
+  function handleNotifications(event) {
+    let value = event.target.value;
+    let packet = new TextDecoder().decode(value)
+    log(packet);
+
+    console.log('> Received: ' + packet);
+
+    if (accumulateRecords) {
+      mutipleRecordArray.push(packet)
+      // console.log(mutipleRecordArray.length)
+    }
+
+    // Check if RA from getAllButtonPressed
+    let [ret, args] = [packet.slice(0,3), packet.slice(3)]
+    if (ret == ";RA" && getAllButtonPressed == true) {
+      getAllButtonPressed = false
+      mutipleRecordArray = []
+      accumulateRecords = true
+
+      let [startId, endId] = args.split(',').map(Number).slice(0, 2)
+      // let [startId, endId] = [0, 10]
+      queryMultiple(startId, endId)
+
+    }
+
+  }
+
+  function sendQuery(query) {
+    return mySecondCharacteristic.writeValue(new TextEncoder().encode(`${query}`+"\r\n"))
+  }
+
+  function send() {
+    var query = document.getElementById("input").value;
+    log("You> " + query);
+
+    let [cmd, args] = query.split(" ")
+    if (cmd == ";QM") {
+      let [startId, endId] = args.split(',').map(Number).slice(0, 2)
+      queryMultiple(startId, endId);
+    } else {
+      sendQuery(query)
+    }
+    document.getElementById("input").value = "";
+
+  }
+
+  function queryMultiple(id, endId) {
+
+    if (id > endId) { return; }
+
+    setTimeout(function() {   //  call a 3s setTimeout when the loop is called
+      sendQuery(`;QM ${id},${id}`)
+      queryMultiple(id+1, endId)
+    }, 100)
+
+  }
+
+  function getAll() {
+
+    log("*".repeat(20) + " GETTING ALL!!! 🚀 " + "*".repeat(20));
+
+    sendQuery(';QA')
+    getAllButtonPressed = true;
+
+    document.getElementById("input").value = "";
+  }
+
+  function str2ab(str) {
+    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+    var bufView = new Uint16Array(buf);
+    for (var i=0, strLen=str.length; i<strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+  function saveToCSV() {
+    mutipleRecordArray = mutipleRecordArray.join('').split('\r\n')
+    let csvContent = "data:text/csv;charset=utf-8,"
+    csvContent += "time_s,index,batt_level,bme680_temp,bme680_rh,bme680_bp,bme680_gas_adc,bme680_gas_iaq,ntc_temp,si7021_temp,si7021_rh,shtc3_temp,si7021_rh,sgpc3_gas_adc,sgpc3_gas_etvoc\r\n"
+
+    console.log(`Preparing to save ${mutipleRecordArray.length} records to a csv 🚀`)
+    for (var i=0; i<mutipleRecordArray.length-1; i++) {
+      try {
+        record = JSON.parse(mutipleRecordArray[i].slice(3))
+        let entry = `${record.time_s},${record.index},${record.batt_level},${record.bme680_temp},${record.bme680_rh},${record.bme680_bp},${record.bme680_gas_adc},${record.bme680_gas_iaq},${record.ntc_temp},${record.si7021_temp},${record.si7021_rh},${record.shtc3_temp},${record.si7021_rh},${record.sgpc3_gas_adc},${record.sgpc3_gas_etvoc}\r\n`
+        csvContent += entry
+      }
+      catch(err) {
+        console.error(err);
+      }
+    }
+
+    // Save to CSV
+    var encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+
+  }
+
+  function log(str) {
+    document.getElementById("term").value += str+"\n";
+  }
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monty Web-Bluetooth Terminal</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+
+        .header {
+            background-color: #41735f;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            font-weight: 600;
+            font-size: 24px;
+        }
+
+        .banner {
+            background-color: #41735f;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .banner p {
+            font-size: 16px;
+            line-height: 1.5;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            width: 23%;
+            background-color: #41735f;
+            color: #fff;
+        }
+
+        .btn:hover {
+            background-color: #bcd3fb;
+            color: #fff;
+        }
+
+        .terminal {
+            width: 80%;
+            height: 400px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-family: 'Poppins', sans-serif;
+            resize: none;
+            font-size: 16px;
+            border: none;
+            background-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">WELCOME TO THE MONTY WEB-BLUETOOTH TERMINAL!</div>
+
+    <div class="banner">
+        <p>This browser tool allows you to connect to Monty Monitor device and stream all its available data, typically up to three months, into a CSV file using Web Bluetooth. To access this tool, you must use both a Web Bluetooth enabled device and Google Chrome browser.</p><br>
+        <p>Please note that the readings will be raw data with no pre-processing so may not be indicative of the monitoring conditions applied. Gas readings specifically require additional analysis to convert to PPM and PPB equivalents. Other data points are available beyond those reported by this tool however they require custom firmware programming, available on request.</p><br>
+    </div>
+
+    <div class="container">
+        <div class="btn-container">
+            <button class="btn" onclick="connect()">CONNECT 🔌</button>
+            <button class="btn" onclick="disconnect()">DISCONNECT ❌</button>
+            <button class="btn" onclick="getAll()">GET ALL 🚀</button>
+            <button class="btn" onclick="saveToCSV()">SAVE 💾</button>
+        </div>
+
+        <textarea id="term" readonly class="terminal"></textarea>
+    </div>
+</body>
+
+
+</html>
