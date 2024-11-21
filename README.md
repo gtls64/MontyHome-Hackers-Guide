@@ -4,6 +4,10 @@
 
 Welcome to the **Monty Home Device Hacking Guide** repository! This guide provides step-by-step instructions for extending the functionality of the Monty Home BLE device using a Raspberry Pi. Originally designed for compost monitoring, the Monty Home device collects valuable data on temperature, humidity, and other environmental metrics. Through this guide, you’ll learn how to retrieve, display, and automate actions based on this data.
 
+## Where to By Monty Home
+
+https://montycompost.co/
+
 ## Table of Contents
 
 - [Overview](#overview)
