@@ -167,9 +167,6 @@ Consider integrating data into IoT platforms or dashboards for real-time data vi
 
 ---
 
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
 
 ## Contributing
 
