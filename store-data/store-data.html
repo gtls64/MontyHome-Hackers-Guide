@@ -1,306 +1,352 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLE Data Logger</title>
+    <title>Monty Web-Bluetooth Terminal</title>
     <style>
+        /* GitHub Color Palette */
         :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --light-grey: #f8f9fa;
-            --dark-grey: #343a40;
+            --gh-bg: #f6f8fa;
+            --gh-header-bg: #24292e;
+            --gh-text: #24292e;
+            --gh-text-secondary: #586069;
+            --gh-border: #e1e4e8;
+            --gh-button-border: rgba(27, 31, 35, 0.15);
+            --gh-blue: #0366d6;
+            --gh-green: #2ea44f;
+            --gh-red: #d73a49;
         }
+        
+        /* Base styles */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            color: var(--dark-grey);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            margin: 0;
+            padding: 0;
+            background-color: var(--gh-bg);
+            color: var(--gh-text);
+            line-height: 1.5;
         }
-        .header { text-align: center; margin-bottom: 25px; }
-        .controls { text-align: center; margin-bottom: 25px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        button {
-            font-size: 1em;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-        button:active { transform: scale(0.98); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #connectButton { background-color: var(--primary-color); }
-        #downloadButton { background-color: var(--success-color); }
-        #clearButton { background-color: var(--danger-color); }
-
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
+        .header {
             text-align: center;
+            padding: 16px 20px;
+            background-color: var(--gh-header-bg);
+            color: white;
+            border-bottom: 1px solid #1b1f23;
         }
-        .data-card {
-            background-color: var(--light-grey);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
         }
-        .data-card h3 { margin: 0 0 10px 0; color: var(--secondary-color); font-size: 1em; }
-        .data-card p { margin: 0; font-size: 2em; font-weight: bold; }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 32px;
+            padding: 0 24px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 1012px;
+            margin-bottom: 24px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--gh-button-border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+            font-family: inherit;
+            flex-grow: 1;
+            min-width: 180px;
+            text-align: center;
+            box-shadow: 0 1px 0 rgba(27, 31, 35, 0.04);
+        }
+        
+        /* Button Variants */
+        #btn-connect { 
+            background-color: #f6f8fa;
+            color: var(--gh-text);
+        }
+        #btn-connect:hover { background-color: #f3f4f6; }
+        
+        #btn-getall {
+            background-color: var(--gh-blue);
+            color: white;
+            border-color: rgba(27, 31, 35, 0.15);
+        }
+        #btn-getall:hover { background-color: #0361cd; }
 
-        .status-panel {
-            background-color: var(--light-grey);
-            border-left: 5px solid var(--secondary-color);
-            padding: 15px;
-            margin-top: 25px;
-            border-radius: 5px;
-            text-align: left;
+        #btn-save {
+            background-color: var(--gh-green);
+            color: white;
+            border-color: rgba(27, 31, 35, 0.15);
         }
-        .status-panel.error { border-left-color: var(--danger-color); }
-        .status-panel.connected { border-left-color: var(--success-color); }
+        #btn-save:hover { background-color: #2c974b; }
+        
+        #btn-disconnect {
+            background-color: var(--gh-red);
+            color: white;
+            border-color: rgba(27, 31, 35, 0.15);
+        }
+        #btn-disconnect:hover { background-color: #cb2431; }
+
+        .terminal {
+            width: 100%;
+            max-width: 1012px;
+            height: 440px;
+            margin-bottom: 16px;
+            padding: 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            resize: vertical;
+            font-size: 13px;
+            border: 1px solid var(--gh-border);
+            border-radius: 6px;
+            background-color: #ffffff;
+            box-shadow: inset 0 1px 0 rgba(27,31,35,.075);
+        }
+        .status-panel {
+            width: 100%;
+            max-width: 1012px;
+            background-color: #fff;
+            border: 1px solid var(--gh-border);
+            border-left-width: 5px;
+            padding: 16px;
+            border-radius: 6px;
+            text-align: left;
+            margin-bottom: 32px;
+        }
+        .status-panel.error { border-left-color: var(--gh-red); }
+        .status-panel.connected { border-left-color: var(--gh-green); }
     </style>
 </head>
+
 <body>
-
     <div class="header">
-        <h1>BLE Data Logger</h1>
-        <p>Connect to a device, log sensor data, and download the results as a JSON file.</p>
+        <h1>Monty BLE Terminal</h1>
     </div>
 
-    <div class="controls">
-        <button id="connectButton">Search & Connect</button>
-        <button id="downloadButton" disabled>Download Data</button>
-        <button id="clearButton" disabled>Clear Data</button>
-    </div>
+    <div class="container">
+        <div class="controls">
+            <button class="btn" id="btn-connect" onclick="connect()">Connect 🔌</button>
+            <button class="btn" id="btn-disconnect" onclick="disconnect()">Disconnect ❌</button>
+            <button class="btn" id="btn-getall" onclick="getAll()">Get All Records 🚀</button>
+            <button class="btn" id="btn-save" onclick="saveToCSV()">Save as CSV 💾</button>
+        </div>
 
-    <div class="data-grid">
-        <div class="data-card">
-            <h3>TEMPERATURE</h3>
-            <p id="tempValue">--.- &deg;C</p>
-        </div>
-        <div class="data-card">
-            <h3>HUMIDITY</h3>
-            <p id="humidityValue">--.- %</p>
-        </div>
-        <div class="data-card">
-            <h3>TVOC</h3>
-            <p id="tvocValue">---- ppb</p>
-        </div>
-        <div class="data-card">
-            <h3>CO₂</h3>
-            <p id="co2Value">---- ppm</p>
+        <textarea id="term" readonly class="terminal" placeholder="Connect to a device to see logs..."></textarea>
+        
+        <div id="statusPanel" class="status-panel">
+            <strong>Status:</strong> <span id="statusMessage">Disconnected</span>
         </div>
     </div>
 
-    <div id="statusPanel" class="status-panel">
-        <strong>Status:</strong> <span id="statusMessage">Disconnected. <strong>Records Logged:</strong> <span id="logCount">0</span></span>
-    </div>
+<script>
+    // --- State Variables ---
+    let notifyCharacteristic;
+    let writeCharacteristic;
+    let deviceName;
+    let getAllButtonPressed = false;
+    let isConnected = false;
+    let mutipleRecordArray = [];
+    let accumulateRecords = false;
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Configuration ---
-            const QUERY_INTERVAL_MS = 10000; // Time in ms for a full query cycle
+    // --- UI Elements ---
+    const term = document.getElementById("term");
+    const statusMessage = document.getElementById("statusMessage");
+    const statusPanel = document.getElementById("statusPanel");
 
-            // BLE Configuration from device documentation
-            const BLE_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
-            const BLE_CHARACTERISTIC_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    // --- Main Functions ---
 
-            // BLE Commands Cycle
-            const SENSOR_QUERIES = [
-                { command: ">;QT\r\n", type: 'temperature' }, // Query Temperature
-                { command: ">;QH\r\n", type: 'humidity' },    // Query Humidity
-                { command: ">;QV\r\n", type: 'tvoc' },        // Query TVOC
-                { command: ">;QC\r\n", type: 'co2' }          // Query CO2
-            ];
-            
-            // --- UI Elements ---
-            const connectButton = document.getElementById('connectButton');
-            const downloadButton = document.getElementById('downloadButton');
-            const clearButton = document.getElementById('clearButton');
-            const statusMessage = document.getElementById('statusMessage');
-            const statusPanel = document.getElementById('statusPanel');
-            const logCountSpan = document.getElementById('logCount');
-            const valueDisplays = {
-                temperature: document.getElementById('tempValue'),
-                humidity: document.getElementById('humidityValue'),
-                tvoc: document.getElementById('tvocValue'),
-                co2: document.getElementById('co2Value')
-            };
+    function connect() {
+        if (isConnected) {
+            log("! Already connected. Please disconnect first.");
+            return;
+        }
+        const serviceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const notifyUuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // RX
+        const writeUuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";  // TX
 
-            // --- App State ---
-            let bleDevice = null;
-            let bleCharacteristic = null;
-            let queryIntervalId = null;
-            let collectedData = [];
-            let currentRecord = {};
-            let currentQueryIndex = 0;
+        log("Requesting Bluetooth device...");
+        navigator.bluetooth.requestDevice({
+            filters: [{ services: [serviceUuid] }],
+        })
+        .then(device => {
+            log(`Connecting to ${device.name || 'device'}...`);
+            deviceName = device.name;
+            return device.gatt.connect();
+        })
+        .then(server => {
+            log("Getting primary service...");
+            return server.getPrimaryService(serviceUuid);
+        })
+        .then(service => {
+            log("Getting characteristics...");
+            return Promise.all([
+                service.getCharacteristic(notifyUuid),
+                service.getCharacteristic(writeUuid)
+            ]);
+        })
+        .then(([notifyChar, writeChar]) => {
+            notifyCharacteristic = notifyChar;
+            writeCharacteristic = writeChar;
+            log("Starting notifications...");
+            return notifyCharacteristic.startNotifications();
+        })
+        .then(() => {
+            log(`> Notifications started successfully.`);
+            notifyCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+            isConnected = true;
+            updateStatus(`Successfully connected to: ${deviceName}`, false, true);
+        })
+        .catch(error => {
+            log('! Error: ' + error);
+            updateStatus(`Connection Error: ${error.message}`, true);
+        });
+    }
 
-            // --- Event Listeners ---
-            connectButton.addEventListener('click', () => bleDevice && bleDevice.gatt.connected ? disconnectFromDevice() : connectToDevice());
-            downloadButton.addEventListener('click', downloadDataAsJSON);
-            clearButton.addEventListener('click', clearLoggedData);
+    function disconnect() {
+        if (notifyCharacteristic && notifyCharacteristic.service.device.gatt.connected) {
+            notifyCharacteristic.stopNotifications()
+            .then(_ => {
+                log('> Notifications stopped.');
+                notifyCharacteristic.removeEventListener('characteristicvaluechanged', handleNotifications);
+                return notifyCharacteristic.service.device.gatt.disconnect();
+            })
+            .then(() => {
+                log("Device disconnected.");
+                isConnected = false;
+                updateStatus("Disconnected");
+            })
+            .catch(error => {
+                log('! Disconnect Error: ' + error);
+                updateStatus(`Disconnect Error: ${error.message}`, true);
+            });
+        } else {
+            log("! Not connected.");
+        }
+    }
 
-            // --- Core Functions ---
-            async function connectToDevice() {
-                if (!navigator.bluetooth) {
-                    alert("Web Bluetooth API is not available in this browser. Please use Google Chrome or Edge.");
-                    return;
-                }
-                updateStatus("Requesting device selection...");
-                try {
-                    bleDevice = await navigator.bluetooth.requestDevice({
-                        acceptAllDevices: true,
-                        optionalServices: [BLE_SERVICE_UUID]
-                    });
-                    updateStatus(`Connecting to "${bleDevice.name || 'unnamed'}"...`);
-                    bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-                    const server = await bleDevice.gatt.connect();
-                    const service = await server.getPrimaryService(BLE_SERVICE_UUID);
-                    bleCharacteristic = await service.getCharacteristic(BLE_CHARACTERISTIC_UUID);
-                    await bleCharacteristic.startNotifications();
-                    bleCharacteristic.addEventListener('characteristicvaluechanged', handleNotification);
+    function handleNotifications(event) {
+        const value = event.target.value;
+        const packet = new TextDecoder().decode(value);
+        
+        if (packet.trim()) {
+            log('> ' + packet.trim());
+        }
 
-                    onConnected();
-                } catch (error) {
-                    updateStatus(`Connection Error: ${error.message}`, true);
-                }
-            }
+        if (accumulateRecords) {
+            mutipleRecordArray.push(packet);
+        }
 
-            function onConnected() {
-                updateStatus(`Connected to ${bleDevice.name || 'device'}. Starting data logging...`, false, true);
-                connectButton.textContent = 'Disconnect';
-                downloadButton.disabled = false;
-                clearButton.disabled = false;
+        const [ret, args] = [packet.slice(0, 3), packet.slice(3)];
+        if (ret === ";RA" && getAllButtonPressed) {
+            getAllButtonPressed = false;
+            mutipleRecordArray = [];
+            accumulateRecords = true;
 
-                // Start the query cycle, executing sendNextQuery every (interval / number of queries) seconds.
-                const delayPerQuery = QUERY_INTERVAL_MS / SENSOR_QUERIES.length;
-                queryIntervalId = setInterval(sendNextQuery, delayPerQuery);
-            }
+            const [startId, endId] = args.split(',').map(Number).slice(0, 2);
+            log(`> Received record range: ${startId} to ${endId}. Fetching all records...`);
+            queryMultiple(startId, endId);
+        }
+    }
 
-            function onDisconnected() {
-                updateStatus("Device disconnected.");
-                clearInterval(queryIntervalId);
-                connectButton.textContent = 'Search & Connect';
-                bleDevice = null;
-            }
-            
-            async function disconnectFromDevice() {
-                 if (!bleDevice || !bleDevice.gatt.connected) return;
-                 await bleDevice.gatt.disconnect();
-            }
+    function sendQuery(query) {
+        if (!writeCharacteristic) {
+            log("! Cannot send query: Not connected.");
+            return;
+        }
+        const command = `${query}\r\n`;
+        return writeCharacteristic.writeValue(new TextEncoder().encode(command));
+    }
 
-            function sendNextQuery() {
-                if (!bleCharacteristic) return;
+    function queryMultiple(id, endId) {
+        if (id > endId) {
+            log("> Finished querying all records.");
+            accumulateRecords = false;
+            return;
+        }
+        setTimeout(() => {
+            sendQuery(`;QM ${id},${id}`);
+            queryMultiple(id + 1, endId);
+        }, 100);
+    }
 
-                // If we are at the start of a new cycle, begin a new record.
-                if (currentQueryIndex === 0) {
-                    currentRecord = { timestamp: new Date().toISOString() };
-                }
+    function getAll() {
+        if (!isConnected) {
+            log("! Please connect to a device first.");
+            return;
+        }
+        log("----------------------------------------");
+        log("Starting 'Get All' process... 🚀");
+        sendQuery(';QA');
+        getAllButtonPressed = true;
+    }
 
-                const query = SENSOR_QUERIES[currentQueryIndex];
-                writeToCharacteristic(query.command);
+    function saveToCSV() {
+        if (mutipleRecordArray.length === 0) {
+            log("! No data to save. Use 'Get All Records' to fetch data first.");
+            return;
+        }
 
-                // Move to the next query for the next interval
-                currentQueryIndex = (currentQueryIndex + 1) % SENSOR_QUERIES.length;
-            }
-            
-            function handleNotification(event) {
-                const value = event.target.value;
-                const decoder = new TextDecoder('utf-8');
-                const responseStr = decoder.decode(value).trim();
-                console.log(`Received: ${responseStr}`);
+        const fullString = mutipleRecordArray.join('');
+        const records = fullString.split('\r\n').filter(rec => rec.startsWith(';RM'));
 
-                // Parse response and update current record
-                let sensorType, displayElement, unit, parsedValue;
-                
-                if (responseStr.includes(">;RT=")) {
-                    sensorType = 'temperature';
-                    parsedValue = parseInt(responseStr.split('=')[1], 10) / 100.0;
-                    unit = ' &deg;C';
-                } else if (responseStr.includes(">;RH=")) {
-                    sensorType = 'humidity';
-                    parsedValue = parseInt(responseStr.split('=')[1], 10) / 100.0;
-                    unit = ' %';
-                } else if (responseStr.includes(">;RV=")) {
-                    sensorType = 'tvoc';
-                    parsedValue = parseInt(responseStr.split('=')[1], 10);
-                    unit = ' ppb';
-                } else if (responseStr.includes(">;RC=")) {
-                    sensorType = 'co2';
-                    parsedValue = parseInt(responseStr.split('=')[1], 10);
-                    unit = ' ppm';
-                }
+        log(`> Preparing to save ${records.length} records...`);
 
-                if (sensorType) {
-                    valueDisplays[sensorType].innerHTML = `${parsedValue.toFixed(1)}${unit}`;
-                    currentRecord[sensorType] = parsedValue;
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "timestamp,temperature_c,humidity_rh,tvoc_ppb,iaq_index\r\n";
 
-                    // If this was the last sensor in the cycle, save the complete record
-                    if (sensorType === SENSOR_QUERIES[SENSOR_QUERIES.length - 1].type) {
-                        collectedData.push(currentRecord);
-                        logCountSpan.textContent = collectedData.length;
-                        console.log('Logged new record:', currentRecord);
-                    }
-                }
-            }
-
-            async function writeToCharacteristic(command) {
-                try {
-                    const encoder = new TextEncoder();
-                    await bleCharacteristic.writeValue(encoder.encode(command));
-                } catch(error) {
-                    updateStatus(`Write Error: ${error.message}`, true);
-                }
-            }
-            
-            function downloadDataAsJSON() {
-                if (collectedData.length === 0) {
-                    alert("No data has been logged yet. Please wait for sensor readings.");
-                    return;
-                }
-
-                // Create a JSON string with pretty printing
-                const jsonString = JSON.stringify(collectedData, null, 2);
-                
-                // Create a blob to be downloaded
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-
-                // Create a temporary link element to trigger the download
-                const a = document.createElement('a');
-                a.href = url;
-                // Propose a filename for the user
-                a.download = `sensor_data_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-
-                // Clean up by removing the link and revoking the URL
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            function clearLoggedData() {
-                if (confirm("Are you sure you want to clear all logged data? This action cannot be undone.")) {
-                    collectedData = [];
-                    logCountSpan.textContent = 0;
-                    updateStatus("Logged data has been cleared.");
-                }
-            }
-
-            function updateStatus(message, isError = false, isConnected = false) {
-                const baseMessage = isConnected ? `Connected to ${bleDevice.name}. ` : '';
-                statusMessage.innerHTML = `${baseMessage}${message} <strong>Records Logged:</strong> <span id="logCount">${collectedData.length}</span>`;
-                statusPanel.className = 'status-panel'; // Reset class
-                if (isError) statusPanel.classList.add('error');
-                if (isConnected) statusPanel.classList.add('connected');
+        records.forEach(recordString => {
+            try {
+                const record = JSON.parse(recordString.slice(3));
+                const row = [
+                    record.time_s || '',
+                    record.bme680_temp || '',
+                    record.bme680_rh || '',
+                    record.sgpc3_gas_etvoc || '',
+                    record.bme680_gas_iaq || ''
+                ].join(',');
+                csvContent += row + "\r\n";
+            } catch (err) {
+                console.error("Failed to parse record:", recordString, err);
+                log(`! Warning: Could not parse a record. Skipping. Raw: ${recordString}`);
             }
         });
-    </script>
+
+        log("> CSV file ready. Triggering download...");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `monty_data_simplified_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    function log(str) {
+        term.value += str + "\n";
+        term.scrollTop = term.scrollHeight;
+    }
+
+    function updateStatus(message, isError = false, isConnectedStatus = false) {
+        statusMessage.textContent = message;
+        statusPanel.className = 'status-panel'; // Reset class
+        if (isError) {
+            statusPanel.classList.add('error');
+        } else if (isConnectedStatus) {
+            statusPanel.classList.add('connected');
+        }
+    }
+</script>
+
 </body>
 </html>
