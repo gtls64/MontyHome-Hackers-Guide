@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLE Data Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        #timestamp {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>BLE Data Dashboard</h1>
+    <p>This page shows the last 10 readings collected from the BLE device in real-time.</p>
+
+    <!-- Chart containers -->
+    <div class="chart-container">
+        <canvas id="batteryChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="temperatureChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="humidityChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="tvocChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="co2Chart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global variables to hold the chart instances
+        let batteryChart, temperatureChart, humidityChart, tvocChart, co2Chart;
+
+        // Initialize the charts
+        function initializeCharts() {
+            const ctxBattery = document.getElementById('batteryChart').getContext('2d');
+            batteryChart = new Chart(ctxBattery, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Battery Level (%)', backgroundColor: '#4caf50', borderColor: '#4caf50', data: [] }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+
+            const ctxTemperature = document.getElementById('temperatureChart').getContext('2d');
+            temperatureChart = new Chart(ctxTemperature, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Temperature (°C)', backgroundColor: '#ff5722', borderColor: '#ff5722', data: [] }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+
+            const ctxHumidity = document.getElementById('humidityChart').getContext('2d');
+            humidityChart = new Chart(ctxHumidity, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Humidity (%)', backgroundColor: '#2196f3', borderColor: '#2196f3', data: [] }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+
+            const ctxTvoc = document.getElementById('tvocChart').getContext('2d');
+            tvocChart = new Chart(ctxTvoc, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'TVOC (ppm)', backgroundColor: '#9c27b0', borderColor: '#9c27b0', data: [] }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+
+            const ctxCo2 = document.getElementById('co2Chart').getContext('2d');
+            co2Chart = new Chart(ctxCo2, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'CO2 (ppm)', backgroundColor: '#ff9800', borderColor: '#ff9800', data: [] }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // Fetch data and update charts
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/data');
+                const last10Data = await response.json();
+
+                // Extract labels (timestamps) and data for each chart
+                const labels = last10Data.map(entry => entry.timestamp);
+                const batteryData = last10Data.map(entry => entry.data['Battery Level']);
+                const temperatureData = last10Data.map(entry => entry.data['NTC Temperature']);
+                const humidityData = last10Data.map(entry => entry.data['Humidity']);
+                const tvocData = last10Data.map(entry => entry.data['TVOC Reading']);
+                const co2Data = last10Data.map(entry => entry.data['CO2 Reading']);
+
+                // Update each chart with the latest 10 data points
+                batteryChart.data.labels = labels;
+                batteryChart.data.datasets[0].data = batteryData;
+                batteryChart.update();
+
+                temperatureChart.data.labels = labels;
+                temperatureChart.data.datasets[0].data = temperatureData;
+                temperatureChart.update();
+
+                humidityChart.data.labels = labels;
+                humidityChart.data.datasets[0].data = humidityData;
+                humidityChart.update();
+
+                tvocChart.data.labels = labels;
+                tvocChart.data.datasets[0].data = tvocData;
+                tvocChart.update();
+
+                co2Chart.data.labels = labels;
+                co2Chart.data.datasets[0].data = co2Data;
+                co2Chart.update();
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Initialize charts on page load
+        initializeCharts();
+
+        // Fetch the latest data every 5 seconds
+        setInterval(fetchData, 5000);
+
+        // Initial data fetch when the page loads
+        fetchData();
+    </script>
+</body>
+</html>
