@@ -3,416 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web BLE Sensor Dashboard</title>
-    <!-- Tailwind CSS CDN for easy styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>BLE Data Logger</title>
     <style>
-        /* Custom font */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-grey: #f8f9fa;
+            --dark-grey: #343a40;
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            color: var(--dark-grey);
         }
-        .connection-status {
-            animation: pulse 1.5s infinite ease-in-out;
+        .header { text-align: center; margin-bottom: 25px; }
+        .controls { text-align: center; margin-bottom: 25px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        button {
+            font-size: 1em;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
         }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #connectButton { background-color: var(--primary-color); }
+        #downloadButton { background-color: var(--success-color); }
+        #clearButton { background-color: var(--danger-color); }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
         }
+        .data-card {
+            background-color: var(--light-grey);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .data-card h3 { margin: 0 0 10px 0; color: var(--secondary-color); font-size: 1em; }
+        .data-card p { margin: 0; font-size: 2em; font-weight: bold; }
+
+        .status-panel {
+            background-color: var(--light-grey);
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .status-panel.error { border-left-color: var(--danger-color); }
+        .status-panel.connected { border-left-color: var(--success-color); }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="container mx-auto bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Web BLE Sensor Dashboard</h1>
+<body>
 
-        <div class="mb-6 space-y-4">
-            <p class="text-gray-700 text-center text-sm">
-                Click "Connect to BLE Device" to scan for your sensor. You will be prompted to select it.
-                <span class="font-bold text-red-600">Note: This page must be served over HTTPS for BLE to work (e.g., using a simple local server).</span>
-            </p>
-            <div id="connection-status" class="text-center text-sm font-medium text-gray-600">
-                Status: Not Connected
-            </div>
-            <button id="connect-button" class="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-200 ease-in-out shadow-md">
-                Connect to BLE Device
-            </button>
+    <div class="header">
+        <h1>BLE Data Logger</h1>
+        <p>Connect to a device, log sensor data, and download the results as a JSON file.</p>
+    </div>
+
+    <div class="controls">
+        <button id="connectButton">Search & Connect</button>
+        <button id="downloadButton" disabled>Download Data</button>
+        <button id="clearButton" disabled>Clear Data</button>
+    </div>
+
+    <div class="data-grid">
+        <div class="data-card">
+            <h3>TEMPERATURE</h3>
+            <p id="tempValue">--.- &deg;C</p>
         </div>
-
-        <div id="data-container" class="space-y-4 border-t pt-6 mt-6 border-gray-200 hidden">
-            <p class="text-center text-gray-600">No data collected yet. Connecting...</p>
+        <div class="data-card">
+            <h3>HUMIDITY</h3>
+            <p id="humidityValue">--.- %</p>
         </div>
-
-        <div class="mt-8 text-center hidden" id="controls-section">
-            <p id="last-updated" class="text-sm text-gray-500">Last reading: Never</p>
-            <button id="download-button" class="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-200 ease-in-out shadow-md mr-2">
-                Download All Data (.json)
-            </button>
-            <button id="disconnect-button" class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-200 ease-in-out shadow-md">
-                Disconnect
-            </button>
+        <div class="data-card">
+            <h3>TVOC</h3>
+            <p id="tvocValue">---- ppb</p>
         </div>
-
-        <div id="message-box" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                <p id="message-text" class="text-gray-800 mb-4"></p>
-                <button id="message-close-button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">OK</button>
-            </div>
+        <div class="data-card">
+            <h3>CO₂</h3>
+            <p id="co2Value">---- ppm</p>
         </div>
     </div>
 
+    <div id="statusPanel" class="status-panel">
+        <strong>Status:</strong> <span id="statusMessage">Disconnected. <strong>Records Logged:</strong> <span id="logCount">0</span></span>
+    </div>
+
     <script>
-        // --- Configuration variables (UPDATE THESE IF YOUR DEVICE USES DIFFERENT UUIDS) ---
-        // These UUIDs are example generic BLE service and characteristic UUIDs.
-        // You MUST replace them with the actual UUIDs of your device's
-        // service, write characteristic, and notify characteristic.
-        // You can find these using BLE scanner apps (e.g., nRF Connect)
-        // or your device's documentation.
-        const SERVICE_UUID = 'YOUR_BLE_SERVICE_UUID'; // Example: '0000180f-0000-1000-8000-00805f9b34fb' (Battery Service)
-        const WRITE_CHARACTERISTIC_UUID = 'YOUR_BLE_WRITE_CHARACTERISTIC_UUID'; // Example: '00002a19-0000-1000-8000-00805f9b34fb' (Battery Level Characteristic for writing if applicable)
-        const NOTIFY_CHARACTERISTIC_UUID = 'YOUR_BLE_NOTIFY_CHARACTERISTIC_UUID'; // Example: '00002a19-0000-1000-8000-00805f9b34fb' (Battery Level Characteristic for notifications)
-
-        // List of queries to send, their descriptions, expected response prefixes, units, and parsing functions
-        // Make sure these match your device's communication protocol!
-        const queries = {
-            ";QL\r\n": {
-                "description": "Battery Level",
-                "response_prefix": ";RL ",
-                "unit": "%",
-                "parser": (s) => parseFloat(s.trim())
-            },
-            ";QT\r\n": {
-                "description": "NTC Temperature",
-                "response_prefix": ";RT ",
-                "unit": "°C",
-                "parser": (s) => parseInt(s.trim()) / 100
-            },
-            ";QH\r\n": {
-                "description": "Relative Humidity",
-                "response_prefix": ";RH ",
-                "unit": "%",
-                "parser": (s) => parseFloat(s.trim())
-            },
-            ";QO\r\n": {
-                "description": "TVOC Reading",
-                "response_prefix": ";RO ",
-                "unit": "ppb",
-                "parser": (s) => parseFloat(s.trim())
-            },
-            ";QC\r\n": {
-                "description": "CO2 Reading",
-                "response_prefix": ";RC ",
-                "unit": "ppm",
-                "parser": (s) => parseFloat(s.trim())
-            }
-        };
-
-        const QUERY_INTERVAL_MS = 5000; // Time between sending each query in milliseconds
-        const REFRESH_INTERVAL_MS = 1000; // How often to update the display (faster than query to show current status)
-
-        // --- DOM Elements ---
-        const connectButton = document.getElementById('connect-button');
-        const disconnectButton = document.getElementById('disconnect-button');
-        const downloadButton = document.getElementById('download-button');
-        const connectionStatusDiv = document.getElementById('connection-status');
-        const dataContainer = document.getElementById('data-container');
-        const lastUpdatedElement = document.getElementById('last-updated');
-        const controlsSection = document.getElementById('controls-section');
-        const messageBox = document.getElementById('message-box');
-        const messageText = document.getElementById('message-text');
-        const messageCloseButton = document.getElementById('message-close-button');
-
-        // --- Global BLE Objects ---
-        let bleDevice = null;
-        let gattServer = null;
-        let writeCharacteristic = null;
-        let notifyCharacteristic = null;
-        let queryIntervalId = null; // To store the interval for sending queries
-        let notificationPromise = null; // To store the promise for waiting on notification
-        let notificationResolver = null; // To resolve the promise when notification arrives
-
-        // --- Data Storage ---
-        const allCollectedData = []; // Array to store all collected readings over time
-
-        // --- Message Box Functions ---
-        function showMessage(message) {
-            messageText.textContent = message;
-            messageBox.classList.remove('hidden');
-        }
-
-        function hideMessageBox() {
-            messageBox.classList.add('hidden');
-        }
-
-        messageCloseButton.addEventListener('click', hideMessageBox);
-
-        // --- BLE Functions ---
-
-        async function connectToDevice() {
-            try {
-                updateStatus('Scanning for devices...', 'connecting');
-                connectButton.disabled = true;
-
-                // Request device with specific service UUIDs (optional, but helps filter devices)
-                bleDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: [SERVICE_UUID] }],
-                    optionalServices: [SERVICE_UUID] // Essential to access characteristics later
-                });
-
-                updateStatus(`Connecting to ${bleDevice.name || 'Unknown Device'}...`, 'connecting');
-                gattServer = await bleDevice.gatt.connect();
-
-                // Get the primary service
-                const service = await gattServer.getPrimaryService(SERVICE_UUID);
-
-                // Get characteristics by their UUIDs
-                writeCharacteristic = await service.getCharacteristic(WRITE_CHARACTERISTIC_UUID);
-                notifyCharacteristic = await service.getCharacteristic(NOTIFY_CHARACTERISTIC_UUID);
-
-                await notifyCharacteristic.startNotifications();
-                notifyCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
-
-                updateStatus(`Connected to ${bleDevice.name || 'Unknown Device'}`, 'connected');
-                connectButton.classList.add('hidden'); // Hide connect button
-                controlsSection.classList.remove('hidden'); // Show download/disconnect
-                dataContainer.classList.remove('hidden'); // Show data container
-
-                // Start querying
-                startQuerying();
-
-                // Handle disconnects
-                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-
-            } catch (error) {
-                console.error("BLE Connection Error:", error);
-                updateStatus('Connection failed. ' + error.message, 'error');
-                connectButton.disabled = false; // Re-enable button
-                connectButton.classList.remove('hidden');
-                controlsSection.classList.add('hidden');
-                dataContainer.classList.add('hidden');
-                showMessage(`Could not connect to BLE device. Make sure it's nearby and you have HTTPS enabled. Error: ${error.message}`);
-            }
-        }
-
-        function onDisconnected() {
-            console.log('BLE Device disconnected.');
-            updateStatus('Disconnected', 'disconnected');
-            resetBLEState();
-        }
-
-        function disconnectDevice() {
-            if (bleDevice && bleDevice.gatt.connected) {
-                bleDevice.gatt.disconnect();
-            }
-            resetBLEState();
-            showMessage("Disconnected from BLE device.");
-        }
-
-        function resetBLEState() {
-            stopQuerying();
-            bleDevice = null;
-            gattServer = null;
-            writeCharacteristic = null;
-            notifyCharacteristic = null;
-            connectButton.classList.remove('hidden');
-            connectButton.disabled = false;
-            controlsSection.classList.add('hidden');
-            dataContainer.classList.add('hidden');
-        }
-
-        function updateStatus(message, type) {
-            connectionStatusDiv.textContent = `Status: ${message}`;
-            connectionStatusDiv.className = 'text-center text-sm font-medium'; // Reset classes
-
-            if (type === 'connected') {
-                connectionStatusDiv.classList.add('text-green-600', 'connection-status');
-                document.body.classList.remove('bg-red-100', 'bg-yellow-100');
-                document.body.classList.add('bg-green-50');
-            } else if (type === 'connecting') {
-                connectionStatusDiv.classList.add('text-blue-600', 'connection-status');
-                document.body.classList.remove('bg-green-50', 'bg-red-100');
-                document.body.classList.add('bg-blue-50');
-            } else if (type === 'disconnected') {
-                connectionStatusDiv.classList.add('text-gray-600');
-                document.body.classList.remove('bg-green-50', 'bg-blue-50');
-                document.body.classList.add('bg-gray-100');
-            } else if (type === 'error') {
-                connectionStatusDiv.classList.add('text-red-600');
-                document.body.classList.remove('bg-green-50', 'bg-blue-50');
-                document.body.classList.add('bg-red-100');
-            }
-        }
-
-        async function handleNotifications(event) {
-            const value = event.target.value;
-            const decoder = new TextDecoder('utf-8');
-            const response_str = decoder.decode(value).trim();
-            console.log(`Notification received: ${response_str}`);
-
-            // Resolve the current notification promise
-            if (notificationResolver) {
-                notificationResolver(response_str);
-                notificationResolver = null; // Clear resolver
-            }
-        }
-
-        async function sendAndReceiveQuery(queryCommand, queryInfo) {
-            if (!writeCharacteristic || !notifyCharacteristic || !gattServer.connected) {
-                console.warn("Not connected to BLE device. Cannot send query.");
-                return { [queryInfo.description]: { error: "Device not connected" } };
-            }
-
-            // Create a promise that will be resolved when a notification arrives
-            notificationPromise = new Promise(resolve => {
-                notificationResolver = resolve;
-            });
-
-            try {
-                console.log(`Sending query: ${queryCommand.trim()} for ${queryInfo.description}`);
-                const encoder = new TextEncoder();
-                await writeCharacteristic.writeValueWithoutResponse(encoder.encode(queryCommand)); // Use writeValueWithoutResponse for commands
-
-                // Wait for the notification, with a timeout
-                const response_str = await Promise.race([
-                    notificationPromise,
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Notification timeout')), 3000)) // 3 second timeout
-                ]);
-
-                if (response_str.startsWith(queryInfo.response_prefix)) {
-                    const raw_value_str = response_str.substring(queryInfo.response_prefix.length);
-                    try {
-                        const parsed_value = queryInfo.parser(raw_value_str);
-                        console.log(`  Parsed ${queryInfo.description}: ${parsed_value} ${queryInfo.unit}`);
-                        return {
-                            [queryInfo.description]: {
-                                value: parsed_value,
-                                unit: queryInfo.unit
-                            }
-                        };
-                    } catch (parseError) {
-                        console.error(`Error parsing value for ${queryInfo.description}: ${raw_value_str} - ${parseError}`);
-                        return { [queryInfo.description]: { error: `Parsing error: ${raw_value_str}` } };
-                    }
-                } else {
-                    console.warn(`Unexpected response for ${queryInfo.description}: ${response_str}`);
-                    return { [queryInfo.description]: { error: `Unexpected response: ${response_str}` } };
-                }
-
-            } catch (error) {
-                console.error(`Error sending/receiving for ${queryInfo.description}:`, error);
-                return { [queryInfo.description]: { error: error.message } };
-            } finally {
-                notificationResolver = null; // Ensure resolver is cleared
-            }
-        }
-
-        async function performAllQueries() {
-            if (!gattServer || !gattServer.connected) {
-                console.log("Skipping query cycle: Not connected.");
-                return;
-            }
-
-            console.log(`--- Starting new query cycle at ${new Date().toLocaleTimeString()} ---`);
-            const currentReadings = {};
-
-            for (const queryCommand in queries) {
-                if (queries.hasOwnProperty(queryCommand)) {
-                    const queryInfo = queries[queryCommand];
-                    const reading = await sendAndReceiveQuery(queryCommand, queryInfo);
-                    Object.assign(currentReadings, reading); // Add the reading to the current cycle's data
-                    // Add a small delay between queries to give the device time to process
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-            }
-
-            if (Object.keys(currentReadings).length > 0) {
-                const dataEntry = {
-                    timestamp: new Date().toISOString(),
-                    readings: currentReadings
-                };
-                allCollectedData.push(dataEntry);
-                displayLatestData(currentReadings, dataEntry.timestamp);
-            } else {
-                displayLatestData({}, new Date().toISOString(), "No data collected in this cycle.");
-            }
-        }
-
-        function startQuerying() {
-            if (queryIntervalId) {
-                clearInterval(queryIntervalId);
-            }
-            // Perform an immediate query, then set up the interval
-            performAllQueries();
-            queryIntervalId = setInterval(performAllQueries, QUERY_INTERVAL_MS);
-        }
-
-        function stopQuerying() {
-            if (queryIntervalId) {
-                clearInterval(queryIntervalId);
-                queryIntervalId = null;
-            }
-        }
-
-        function displayLatestData(readings, timestamp, message = "") {
-            dataContainer.innerHTML = '';
-            if (Object.keys(readings).length === 0 && message) {
-                 dataContainer.innerHTML = `<p class="text-center text-gray-600">${message}</p>`;
-            } else if (Object.keys(readings).length === 0) {
-                dataContainer.innerHTML = '<p class="text-center text-gray-600">No data available yet. Trying to connect and fetch readings...</p>';
-            }
-
-            for (const description in readings) {
-                const reading = readings[description];
-                const card = document.createElement('div');
-                card.className = 'bg-gray-50 p-4 rounded-md shadow-sm border border-gray-200 flex justify-between items-center';
-
-                let valueDisplay;
-                if (reading.error) {
-                    valueDisplay = `<span class="text-red-600 text-sm italic">${reading.error}</span>`;
-                } else {
-                    valueDisplay = `<span class="text-2xl font-semibold text-blue-700">${reading.value}</span> <span class="text-gray-600">${reading.unit}</span>`;
-                }
-
-                card.innerHTML = `
-                    <h3 class="text-lg font-medium text-gray-700">${description}</h3>
-                    <div>${valueDisplay}</div>
-                `;
-                dataContainer.appendChild(card);
-            }
-
-            const date = new Date(timestamp);
-            lastUpdatedElement.textContent = `Last reading: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-        }
-
-        function downloadData() {
-            if (allCollectedData.length === 0) {
-                showMessage("No data has been collected yet to download.");
-                return;
-            }
-
-            const dataStr = JSON.stringify(allCollectedData, null, 4);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ble_sensor_data_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showMessage("Data downloaded successfully!");
-        }
-
-        // --- Event Listeners ---
-        connectButton.addEventListener('click', connectToDevice);
-        disconnectButton.addEventListener('click', disconnectDevice);
-        downloadButton.addEventListener('click', downloadData);
-
-        // Initial status update
         document.addEventListener('DOMContentLoaded', () => {
-            updateStatus('Ready to connect. Remember to use HTTPS.', 'disconnected');
-        });
+            // --- Configuration ---
+            const QUERY_INTERVAL_MS = 10000; // Time in ms for a full query cycle
 
+            // BLE Configuration from device documentation
+            const BLE_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
+            const BLE_CHARACTERISTIC_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+
+            // BLE Commands Cycle
+            const SENSOR_QUERIES = [
+                { command: ">;QT\r\n", type: 'temperature' }, // Query Temperature
+                { command: ">;QH\r\n", type: 'humidity' },    // Query Humidity
+                { command: ">;QV\r\n", type: 'tvoc' },        // Query TVOC
+                { command: ">;QC\r\n", type: 'co2' }          // Query CO2
+            ];
+            
+            // --- UI Elements ---
+            const connectButton = document.getElementById('connectButton');
+            const downloadButton = document.getElementById('downloadButton');
+            const clearButton = document.getElementById('clearButton');
+            const statusMessage = document.getElementById('statusMessage');
+            const statusPanel = document.getElementById('statusPanel');
+            const logCountSpan = document.getElementById('logCount');
+            const valueDisplays = {
+                temperature: document.getElementById('tempValue'),
+                humidity: document.getElementById('humidityValue'),
+                tvoc: document.getElementById('tvocValue'),
+                co2: document.getElementById('co2Value')
+            };
+
+            // --- App State ---
+            let bleDevice = null;
+            let bleCharacteristic = null;
+            let queryIntervalId = null;
+            let collectedData = [];
+            let currentRecord = {};
+            let currentQueryIndex = 0;
+
+            // --- Event Listeners ---
+            connectButton.addEventListener('click', () => bleDevice && bleDevice.gatt.connected ? disconnectFromDevice() : connectToDevice());
+            downloadButton.addEventListener('click', downloadDataAsJSON);
+            clearButton.addEventListener('click', clearLoggedData);
+
+            // --- Core Functions ---
+            async function connectToDevice() {
+                if (!navigator.bluetooth) {
+                    alert("Web Bluetooth API is not available in this browser. Please use Google Chrome or Edge.");
+                    return;
+                }
+                updateStatus("Requesting device selection...");
+                try {
+                    bleDevice = await navigator.bluetooth.requestDevice({
+                        acceptAllDevices: true,
+                        optionalServices: [BLE_SERVICE_UUID]
+                    });
+                    updateStatus(`Connecting to "${bleDevice.name || 'unnamed'}"...`);
+                    bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                    const server = await bleDevice.gatt.connect();
+                    const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+                    bleCharacteristic = await service.getCharacteristic(BLE_CHARACTERISTIC_UUID);
+                    await bleCharacteristic.startNotifications();
+                    bleCharacteristic.addEventListener('characteristicvaluechanged', handleNotification);
+
+                    onConnected();
+                } catch (error) {
+                    updateStatus(`Connection Error: ${error.message}`, true);
+                }
+            }
+
+            function onConnected() {
+                updateStatus(`Connected to ${bleDevice.name || 'device'}. Starting data logging...`, false, true);
+                connectButton.textContent = 'Disconnect';
+                downloadButton.disabled = false;
+                clearButton.disabled = false;
+
+                // Start the query cycle, executing sendNextQuery every (interval / number of queries) seconds.
+                const delayPerQuery = QUERY_INTERVAL_MS / SENSOR_QUERIES.length;
+                queryIntervalId = setInterval(sendNextQuery, delayPerQuery);
+            }
+
+            function onDisconnected() {
+                updateStatus("Device disconnected.");
+                clearInterval(queryIntervalId);
+                connectButton.textContent = 'Search & Connect';
+                bleDevice = null;
+            }
+            
+            async function disconnectFromDevice() {
+                 if (!bleDevice || !bleDevice.gatt.connected) return;
+                 await bleDevice.gatt.disconnect();
+            }
+
+            function sendNextQuery() {
+                if (!bleCharacteristic) return;
+
+                // If we are at the start of a new cycle, begin a new record.
+                if (currentQueryIndex === 0) {
+                    currentRecord = { timestamp: new Date().toISOString() };
+                }
+
+                const query = SENSOR_QUERIES[currentQueryIndex];
+                writeToCharacteristic(query.command);
+
+                // Move to the next query for the next interval
+                currentQueryIndex = (currentQueryIndex + 1) % SENSOR_QUERIES.length;
+            }
+            
+            function handleNotification(event) {
+                const value = event.target.value;
+                const decoder = new TextDecoder('utf-8');
+                const responseStr = decoder.decode(value).trim();
+                console.log(`Received: ${responseStr}`);
+
+                // Parse response and update current record
+                let sensorType, displayElement, unit, parsedValue;
+                
+                if (responseStr.includes(">;RT=")) {
+                    sensorType = 'temperature';
+                    parsedValue = parseInt(responseStr.split('=')[1], 10) / 100.0;
+                    unit = ' &deg;C';
+                } else if (responseStr.includes(">;RH=")) {
+                    sensorType = 'humidity';
+                    parsedValue = parseInt(responseStr.split('=')[1], 10) / 100.0;
+                    unit = ' %';
+                } else if (responseStr.includes(">;RV=")) {
+                    sensorType = 'tvoc';
+                    parsedValue = parseInt(responseStr.split('=')[1], 10);
+                    unit = ' ppb';
+                } else if (responseStr.includes(">;RC=")) {
+                    sensorType = 'co2';
+                    parsedValue = parseInt(responseStr.split('=')[1], 10);
+                    unit = ' ppm';
+                }
+
+                if (sensorType) {
+                    valueDisplays[sensorType].innerHTML = `${parsedValue.toFixed(1)}${unit}`;
+                    currentRecord[sensorType] = parsedValue;
+
+                    // If this was the last sensor in the cycle, save the complete record
+                    if (sensorType === SENSOR_QUERIES[SENSOR_QUERIES.length - 1].type) {
+                        collectedData.push(currentRecord);
+                        logCountSpan.textContent = collectedData.length;
+                        console.log('Logged new record:', currentRecord);
+                    }
+                }
+            }
+
+            async function writeToCharacteristic(command) {
+                try {
+                    const encoder = new TextEncoder();
+                    await bleCharacteristic.writeValue(encoder.encode(command));
+                } catch(error) {
+                    updateStatus(`Write Error: ${error.message}`, true);
+                }
+            }
+            
+            function downloadDataAsJSON() {
+                if (collectedData.length === 0) {
+                    alert("No data has been logged yet. Please wait for sensor readings.");
+                    return;
+                }
+
+                // Create a JSON string with pretty printing
+                const jsonString = JSON.stringify(collectedData, null, 2);
+                
+                // Create a blob to be downloaded
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                // Create a temporary link element to trigger the download
+                const a = document.createElement('a');
+                a.href = url;
+                // Propose a filename for the user
+                a.download = `sensor_data_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+
+                // Clean up by removing the link and revoking the URL
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function clearLoggedData() {
+                if (confirm("Are you sure you want to clear all logged data? This action cannot be undone.")) {
+                    collectedData = [];
+                    logCountSpan.textContent = 0;
+                    updateStatus("Logged data has been cleared.");
+                }
+            }
+
+            function updateStatus(message, isError = false, isConnected = false) {
+                const baseMessage = isConnected ? `Connected to ${bleDevice.name}. ` : '';
+                statusMessage.innerHTML = `${baseMessage}${message} <strong>Records Logged:</strong> <span id="logCount">${collectedData.length}</span>`;
+                statusPanel.className = 'status-panel'; // Reset class
+                if (isError) statusPanel.classList.add('error');
+                if (isConnected) statusPanel.classList.add('connected');
+            }
+        });
     </script>
 </body>
 </html>
