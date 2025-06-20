@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monty Home Real Time Web Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-white">Monty Home Real Time Web Dashboard</h1>
+            <div id="connection-status" class="flex items-center space-x-2">
+                <div class="w-3 h-3 rounded-full bg-red-500" id="status-indicator"></div>
+                <span id="status-text">Disconnected</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto p-4 flex flex-col">
+
+        <!-- Connection Screen -->
+        <div id="connection-screen" class="flex flex-col items-center justify-center text-center flex-grow">
+            <svg class="w-24 h-24 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm4 8h8v2H8v-2zm0-4h8v2H8V9z" />
+            </svg>
+            <h2 class="text-2xl font-semibold mb-2">Connect to Your Monty Device</h2>
+            <p class="text-gray-400 mb-6 max-w-md">Use the button below to scan for and connect to your Monty Home device via Bluetooth. Make sure your device is powered on and within range.</p>
+            <button id="connect-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                Connect to Monty Home
+            </button>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen" class="hidden flex-grow flex-col">
+            <!-- Controls -->
+            <div class="bg-gray-800 p-4 rounded-lg shadow-md mb-4">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <button id="start-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 transition-opacity disabled:opacity-50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Start Reading Data</span>
+                        </button>
+                        <button id="stop-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 transition-opacity disabled:opacity-50" disabled>
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Stop Reading Data</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                           <input type="radio" id="format-json" name="format" value="json" class="form-radio text-blue-500" checked>
+                           <label for="format-json">JSON</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                           <input type="radio" id="format-csv" name="format" value="csv" class="form-radio text-blue-500">
+                           <label for="format-csv">CSV</label>
+                        </div>
+                        <button id="export-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 transition-opacity disabled:opacity-50" disabled>
+                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Export Data</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 flex-grow">
+                <!-- Temperature -->
+                <div id="temp-card" class="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center transition-all duration-300">
+                    <svg class="w-12 h-12 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7.C14 5 16.09 3.207 17.657 4.764c1.566 1.567.769 3.657-1.587 5.614l-2.923 2.923a1 1 0 01-1.414-1.414l2.923-2.923c.3-.3.443-.637.443-1.06C15.5 8.529 15.185 8 14.5 8c-1.5 0-3 1.5-3 3 1 2 2.657 1.657 2.657 1.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.752 14.382l-3.375 3.375a2.5 2.5 0 003.536 3.536l3.375-3.375M19 12a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <div class="text-lg font-semibold">Temperature</div>
+                    <div id="temp-value" class="text-4xl font-bold text-white">--.- °C</div>
+                    <div id="temp-time" class="text-xs text-gray-500 mt-2">No data yet</div>
+                </div>
+
+                <!-- Humidity -->
+                <div id="humidity-card" class="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center transition-all duration-300">
+                    <svg class="w-12 h-12 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path></svg>
+                    <div class="text-lg font-semibold">Humidity</div>
+                    <div id="humidity-value" class="text-4xl font-bold text-white">--.- %</div>
+                    <div id="humidity-time" class="text-xs text-gray-500 mt-2">No data yet</div>
+                </div>
+
+                <!-- CO2 -->
+                <div id="co2-card" class="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center transition-all duration-300">
+                    <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4H7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5l3 3-3 3M17 19l-3-3 3-3"></path></svg>
+                    <div class="text-lg font-semibold">CO₂</div>
+                    <div id="co2-value" class="text-4xl font-bold text-white">---- ppm</div>
+                    <div id="co2-time" class="text-xs text-gray-500 mt-2">No data yet</div>
+                </div>
+
+                <!-- TVOC -->
+                <div id="tvoc-card" class="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center transition-all duration-300">
+                     <svg class="w-12 h-12 text-purple-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM12 9v6"></path><path d="M15.364 10.636a4 4 0 11-5.657 0 4 4 0 015.657 0z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    <div class="text-lg font-semibold">TVOC</div>
+                    <div id="tvoc-value" class="text-4xl font-bold text-white">---- ppb</div>
+                    <div id="tvoc-time" class="text-xs text-gray-500 mt-2">No data yet</div>
+                </div>
+
+                <!-- Battery -->
+                <div id="battery-card" class="bg-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center transition-all duration-300">
+                    <svg class="w-12 h-12 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5z"></path></svg>
+                    <div class="text-lg font-semibold">Battery</div>
+                    <div id="battery-value" class="text-4xl font-bold text-white">-- %</div>
+                    <div id="battery-time" class="text-xs text-gray-500 mt-2">No data yet</div>
+                </div>
+            </div>
+
+            <!-- Log Area -->
+            <div class="mt-4">
+                <label for="log" class="text-sm font-medium text-gray-400">Device Log</label>
+                <textarea id="log" class="w-full h-32 mt-1 bg-gray-800 border border-gray-600 rounded-md text-sm text-gray-300 p-2 font-mono" readonly></textarea>
+            </div>
+        </div>
+    </main>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // UI Elements
+    const connectButton = document.getElementById('connect-btn');
+    const startButton = document.getElementById('start-btn');
+    const stopButton = document.getElementById('stop-btn');
+    const exportButton = document.getElementById('export-btn');
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+    const connectionScreen = document.getElementById('connection-screen');
+    const dashboardScreen = document.getElementById('dashboard-screen');
+    const logArea = document.getElementById('log');
+
+    // BLE Service and Characteristic UUIDs
+    const MONTY_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+    const MONTY_WRITE_CHAR_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+    const MONTY_NOTIFY_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+
+    // App State
+    let bleDevice = null;
+    let gattServer = null;
+    let writeCharacteristic = null;
+    let notifyCharacteristic = null;
+    let collectedData = [];
+    let isCollecting = false;
+    let currentDataPacket = {};
+    const pendingResponses = new Map();
+
+    // --- Logging Utility ---
+    const log = (message) => {
+        console.log(message);
+        const timestamp = new Date().toLocaleTimeString();
+        logArea.value += `[${timestamp}] ${message}\n`;
+        logArea.scrollTop = logArea.scrollHeight;
+    };
+
+    // --- UI Update Functions ---
+    const updateUIForConnection = (device) => {
+        connectionScreen.classList.add('hidden');
+        dashboardScreen.classList.remove('hidden');
+        statusText.textContent = `Connected to ${device.name}`;
+        statusIndicator.className = 'w-3 h-3 rounded-full bg-green-500';
+        startButton.disabled = false;
+        stopButton.disabled = true; // Stop should be disabled until collection starts
+        exportButton.disabled = collectedData.length === 0;
+    };
+
+    const updateUIForDisconnection = () => {
+        // Only fully disconnect UI if we are not in a collection cycle
+        if (!isCollecting) {
+            connectionScreen.classList.remove('hidden');
+            dashboardScreen.classList.add('hidden');
+            statusText.textContent = 'Disconnected';
+            statusIndicator.className = 'w-3 h-3 rounded-full bg-red-500';
+            startButton.disabled = true;
+            stopButton.disabled = true;
+            exportButton.disabled = collectedData.length > 0;
+            // Clear BLE variables
+            gattServer = null;
+            writeCharacteristic = null;
+            notifyCharacteristic = null;
+        }
+    };
+
+    const updateCard = (cardId, value, unit) => {
+        const valueEl = document.getElementById(`${cardId}-value`);
+        const timeEl = document.getElementById(`${cardId}-time`);
+        const cardEl = document.getElementById(`${cardId}-card`);
+
+        if (valueEl) valueEl.textContent = `${value} ${unit}`;
+        if (timeEl) timeEl.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+        if (cardEl) {
+            cardEl.classList.add('card-glow');
+            setTimeout(() => cardEl.classList.remove('card-glow'), 500);
+        }
+    };
+    
+    // --- BLE Functions ---
+    const connectToDevice = async () => {
+        log('Requesting Bluetooth Device...');
+        try {
+            bleDevice = await navigator.bluetooth.requestDevice({
+                filters: [{ services: [MONTY_SERVICE_UUID] }],
+                optionalServices: [MONTY_SERVICE_UUID]
+            });
+            bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+            await connectGatt();
+        } catch (error) {
+            log(`Error: ${error.message}`);
+            bleDevice = null;
+        }
+    };
+
+    const connectGatt = async () => {
+        if (!bleDevice) return;
+        log(`Connecting to GATT Server on ${bleDevice.name}...`);
+        gattServer = await bleDevice.gatt.connect();
+        await setupCharacteristics();
+        updateUIForConnection(bleDevice);
+    };
+
+    const setupCharacteristics = async () => {
+        if (!gattServer || !gattServer.connected) {
+             throw new Error("GATT Server not connected.");
+        }
+        log('Getting Service...');
+        const service = await gattServer.getPrimaryService(MONTY_SERVICE_UUID);
+
+        log('Getting Characteristics...');
+        writeCharacteristic = await service.getCharacteristic(MONTY_WRITE_CHAR_UUID);
+        notifyCharacteristic = await service.getCharacteristic(MONTY_NOTIFY_CHAR_UUID);
+
+        log('Starting notifications...');
+        await notifyCharacteristic.startNotifications();
+        notifyCharacteristic.removeEventListener('characteristicvaluechanged', handleNotifications); // Remove old listener
+        notifyCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+        log('Device is ready.');
+    };
+
+    const onDisconnected = (event) => {
+        const device = event.target;
+        log(`Device ${device.name} disconnected.`);
+        if (!isCollecting) {
+            updateUIForDisconnection();
+        }
+    };
+    
+    const sendCommand = async (command) => {
+        if (!writeCharacteristic) {
+            throw new Error('Write characteristic not available. Is the device connected?');
+        }
+        try {
+            const encoder = new TextEncoder();
+            await writeCharacteristic.writeValue(encoder.encode(command + '\r\n'));
+            log(`Sent: ${command}`);
+        } catch (error) {
+            log(`Error sending command: ${error.message}`);
+            throw error;
+        }
+    };
+    
+    const sendCommandAndWaitForResponse = (command, responsePrefix, timeout = 5000) => {
+        return new Promise(async (resolve, reject) => {
+            let timeoutId = setTimeout(() => {
+                pendingResponses.delete(responsePrefix);
+                reject(new Error(`Timeout waiting for response to ${command}`));
+            }, timeout);
+
+            pendingResponses.set(responsePrefix, (data) => {
+                clearTimeout(timeoutId);
+                pendingResponses.delete(responsePrefix);
+                resolve(data);
+            });
+
+            try {
+                await sendCommand(command);
+            } catch (error) {
+                clearTimeout(timeoutId);
+                pendingResponses.delete(responsePrefix);
+                reject(error);
+            }
+        });
+    };
+    
+    const handleNotifications = (event) => {
+        const value = event.target.value;
+        const decoder = new TextDecoder('utf-8');
+        const dataString = decoder.decode(value).trim();
+        log(`Received: ${dataString}`);
+        
+        const responsePrefix = dataString.split(' ')[0];
+        if (pendingResponses.has(responsePrefix)) {
+            const resolve = pendingResponses.get(responsePrefix);
+            resolve(dataString);
+        }
+        
+        parseAndDisplayData(dataString);
+    };
+
+    const parseAndDisplayData = (dataString) => {
+        const parts = dataString.split(' ');
+        if (parts.length < 2) return;
+
+        const identifier = parts[0];
+        const valueStr = parts[1];
+        
+        const value = ['RT', 'RH'].includes(identifier.substring(1)) ? parseFloat(valueStr) / 100 : parseFloat(valueStr);
+        
+        if (isNaN(value)) return;
+
+        currentDataPacket.timestamp = new Date().toISOString();
+        
+        switch (identifier) {
+            case ';RT':
+                updateCard('temp', value.toFixed(2), '°C');
+                currentDataPacket.temperature_c = value.toFixed(2);
+                break;
+            case ';RH':
+                updateCard('humidity', value.toFixed(2), '%');
+                currentDataPacket.humidity_percent = value.toFixed(2);
+                break;
+            case ';RC':
+                updateCard('co2', value.toFixed(0), 'ppm');
+                currentDataPacket.co2_ppm = value.toFixed(0);
+                break;
+            case ';RO':
+                updateCard('tvoc', value.toFixed(0), 'ppb');
+                currentDataPacket.tvoc_ppb = value.toFixed(0);
+                break;
+            case ';RL':
+                updateCard('battery', value.toFixed(0), '%');
+                currentDataPacket.battery_percent = value.toFixed(0);
+                break;
+            default:
+                break;
+        }
+    };
+    
+    const fetchDataCycle = async () => {
+        if (!isCollecting || !bleDevice || !bleDevice.gatt.connected) {
+            throw new Error("Device not connected or collection stopped.");
+        }
+
+        log('Starting new data collection cycle.');
+        currentDataPacket = {}; 
+
+        const commandsToRun = [
+            { command: ';QT', responsePrefix: ';RT' },
+            { command: ';QH', responsePrefix: ';RH' },
+            { command: ';QC', responsePrefix: ';RC' },
+            { command: ';QO', responsePrefix: ';RO' },
+            { command: ';QL', responsePrefix: ';RL' }
+        ];
+
+        for (const item of commandsToRun) {
+            if (!isCollecting) break;
+            log(`Requesting data for ${item.command}`);
+            await sendCommandAndWaitForResponse(item.command, item.responsePrefix);
+            log(`...received response for ${item.command}.`);
+            await new Promise(r => setTimeout(r, 1000)); // 1-second buffer
+        }
+
+        if (isCollecting && Object.keys(currentDataPacket).length > 1) {
+            collectedData.push(currentDataPacket);
+            log(`Data packet saved. Total records: ${collectedData.length}`);
+            exportButton.disabled = false;
+        } else if (isCollecting) {
+            log("No data received in this cycle.");
+        }
+    };
+
+    const dataCollectionLoop = async () => {
+        while (isCollecting) {
+            try {
+                if (!bleDevice.gatt.connected) {
+                    log("Connection lost. Attempting to reconnect...");
+                    statusText.textContent = 'Reconnecting...';
+                    statusIndicator.className = 'w-3 h-3 rounded-full bg-yellow-500';
+                    await connectGatt();
+                    log("Reconnected successfully.");
+                }
+
+                // 1. Fetch data
+                await fetchDataCycle();
+                if (!isCollecting) break;
+
+                // 2. Reboot device
+                log("Rebooting device...");
+                statusText.textContent = `Rebooting...`;
+                statusIndicator.className = 'w-3 h-3 rounded-full bg-yellow-500';
+                await sendCommand(';CR');
+                
+                // Wait for the device to disconnect
+                await new Promise(resolve => {
+                    const checkDisconnect = setInterval(() => {
+                        if (!bleDevice || !bleDevice.gatt.connected || !isCollecting) {
+                            clearInterval(checkDisconnect);
+                            resolve();
+                        }
+                    }, 500);
+                });
+                
+                if (!isCollecting) break;
+
+                // 3. Wait for 1 minute before reconnecting
+                const waitTime = 30;
+                log(`Waiting for ${waitTime} seconds...`);
+                for (let i = waitTime; i > 0; i--) {
+                    if (!isCollecting) break;
+                    statusText.textContent = `Reconnecting in ${i}s...`;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                if (!isCollecting) break;
+
+            } catch (error) {
+                log(`Error in collection loop: ${error.message}.`);
+                if (isCollecting) {
+                    log("Will try again after a short delay.");
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
+            }
+        }
+        log("Data collection loop has ended.");
+    };
+
+    const startDataCollection = () => {
+        if (isCollecting) return;
+        isCollecting = true;
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        log('Starting data collection loop.');
+        dataCollectionLoop();
+    };
+
+    const stopDataCollection = () => {
+        if (!isCollecting) return;
+        isCollecting = false;
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        if (bleDevice && bleDevice.gatt.connected) {
+            statusText.textContent = `Connected to ${bleDevice.name}`;
+            statusIndicator.className = 'w-3 h-3 rounded-full bg-green-500';
+        } else {
+            updateUIForDisconnection();
+        }
+        log('Stopping data collection. The current cycle will complete and then stop.');
+    };
+    
+    const exportData = () => {
+        if (collectedData.length === 0) {
+            log('No data to export.');
+            return;
+        }
+
+        const format = document.querySelector('input[name="format"]:checked').value;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `monty_data_${timestamp}.${format}`;
+        let fileContent = '';
+        let mimeType = '';
+
+        if (format === 'json') {
+            mimeType = 'application/json';
+            fileContent = JSON.stringify(collectedData, null, 2);
+        } else { // CSV
+            mimeType = 'text/csv';
+            const headers = ['timestamp', 'temperature_c', 'humidity_percent', 'co2_ppm', 'tvoc_ppb', 'battery_percent'];
+            const headerString = headers.join(',');
+            
+            const rows = collectedData.map(row => {
+                return headers.map(header => row[header] !== undefined ? row[header] : '').join(',');
+            });
+            fileContent = `${headerString}\n${rows.join('\n')}`;
+        }
+        
+        const blob = new Blob([fileContent], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        log(`Data exported as ${filename}`);
+    };
+
+    // --- Event Listeners ---
+    connectButton.addEventListener('click', connectToDevice);
+    startButton.addEventListener('click', startDataCollection);
+    stopButton.addEventListener('click', stopDataCollection);
+    exportButton.addEventListener('click', exportData);
+});
+
+</script>
+</body>
+</html>
